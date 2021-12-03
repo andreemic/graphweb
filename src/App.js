@@ -1,22 +1,40 @@
 import logo from './logo.svg';
 import './App.css';
-
+import React, { useState } from "react"
 import AceEditor from "react-ace";
 
 import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/theme-github";
-function App() { 
-  const onChange = console.log;
+function App() {
+  const [codeVal, setCodeVal] = useState(`function onLoad(editor) {
+    console.log("i've loaded");
+  }`);
+  const onChange = (val, e) => setCodeVal(val)
   return (
-    <div className="App">
+    <div>
       <AceEditor
+        placeholder="Placeholder Text"
         mode="javascript"
         theme="github"
+        name="graph-code"
         onChange={onChange}
-        name="graphcode"
-        editorProps={{}}
-      />
+        fontSize={14}
+        showPrintMargin={true}
+        showGutter={true}
+        highlightActiveLine={true}
+        value={codeVal}
+        setOptions={{
+          enableBasicAutocompletion: false,
+          enableLiveAutocompletion: false,
+          enableSnippets: false,
+          showLineNumbers: true,
+          tabSize: 2,
+        }} />
+
+        <button>Run</button>
+
     </div>
+
   );
 }
 
