@@ -3,11 +3,21 @@ import './App.css';
 import React, { useState, useMemo, useRef } from "react"
 import AceEditor from "react-ace";
 
-import "ace-builds/src-noconflict/mode-java";
+import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/theme-github";
+import 'brace/mode/javascript';
+import 'brace/snippets/javascript';
+import 'brace/ext/language_tools';
+import ace from 'brace'
+
 import d3config from "./d3config.json"
 import { Graph } from "react-d3-graph";
 import { getDefaultGraph } from './GraphStore';
+
+console.log(ace)
+// #autocompletion
+// let langTools = ace.require('ace/ext/language_tools');
+// langTools.addCompleter(customCompleter);
 
 function App() {
   const [codeVal, setCodeVal] = useState(`function onLoad(editor) {
@@ -68,11 +78,11 @@ function App() {
         highlightActiveLine={true}
         value={codeVal}
         setOptions={{
-          enableBasicAutocompletion: false,
-          enableLiveAutocompletion: false,
+          enableBasicAutocompletion: true,
+          enableLiveAutocompletion: true,
           enableSnippets: false,
           showLineNumbers: true,
-          tabSize: 2,
+          tabSize: 4,
         }} />
 
       <button onClick={runUserCode}>Run</button>

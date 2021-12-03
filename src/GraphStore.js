@@ -103,12 +103,11 @@ class GraphStore {
     if (instance.constructor.name == "Node") {
       node = instance
     } else if (typeof instance === "number") {
-      node = this.nodes[nodeIdx]
+      node = this.nodes[instance]
     } else if (Array.isArray(instance)) {
       edge = instance;
     } else {
-      throw new TypeError(`visit got an invalid argument: ${instance}`)r
-      return
+      throw new TypeError(`visit got an invalid argument: ${instance}`)
     }
 
     if (node) {
