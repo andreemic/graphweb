@@ -15,7 +15,7 @@
     "panAndZoom": false,
     "staticGraph": false,
     "staticGraphWithDragAndDrop": false,
-    "width": 800,
+    "width": 640,
     "d3": {
       "alphaTarget": 0.05,
       "gravity": -400,

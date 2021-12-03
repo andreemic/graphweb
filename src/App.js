@@ -30,7 +30,7 @@ function App() {
     console.log(nodeId, node, c)
   }
   const onClickLink = (source, target) => {
-    source = parseInt(source); 
+    source = parseInt(source);
     target = parseInt(target);
 
     G.removeEdge(source, target);
@@ -42,8 +42,8 @@ function App() {
     console.log(document.getElementById("graph-id-graph-wrapper"))
     let graphEl = document.getElementById("graph-id-graph-wrapper")
 
-    let elementY =  e.clientY - graphEl.clientTop;
-    let elementX =  e.clientX - graphEl.clientLeft;
+    let elementY = e.clientY - graphEl.clientTop;
+    let elementX = e.clientX - graphEl.clientLeft;
 
     // Todo: create node at (elementX, elementY)
   }
@@ -56,36 +56,46 @@ function App() {
 
   const graphRef = useRef(null);
   return (
-    <div>
-      <Graph
-        ref={graphRef}
-        id="graph-id" // id is mandatory
-        data={d3Graph}
-        config={d3config}
-        onClickNode={onClickNode}
-        onClickLink={onClickLink}
-        onClickGraph={onClickGraph}
-      />;
-      <AceEditor
-        placeholder="Placeholder Text"
-        mode="javascript"
-        theme="github"
-        name="graph-code"
-        onChange={onChange}
-        fontSize={14}
-        showPrintMargin={true}
-        showGutter={true}
-        highlightActiveLine={true}
-        value={codeVal}
-        setOptions={{
-          enableBasicAutocompletion: true,
-          enableLiveAutocompletion: true,
-          enableSnippets: false,
-          showLineNumbers: true,
-          tabSize: 4,
-        }} />
+    <div className={"w-screen h-screen flex flex-col justify-center"}>
+      <div>Available functions: {Object.getOwnPropertyNames(Object.getPrototypeOf(G)).join(', ')}</div>
+      <div className={"flex items-center lg:flex-row flex-col"}>
+        <div className={" m-4 bg-white graph-con flex shadow-lg min-content"}>
+          <Graph
+            ref={graphRef}
+            id="graph-id" // id is mandatory
+            data={d3Graph}
+            config={d3config}
+            onClickNode={onClickNode}
+            onClickLink={onClickLink}
+            onClickGraph={onClickGraph}
+          />
+        </div>
+        <div className="code-con">
+          <AceEditor
+            className={"shadow-lg m-3"}
+            placeholder="Placeholder Text"
+            mode="javascript"
+            theme="github"
+            name="graph-code"
+            onChange={onChange}
+            fontSize={14}
+            showPrintMargin={true}
+            showGutter={true}
+            highlightActiveLine={true}
+            value={codeVal}
+            setOptions={{
+              enableBasicAutocompletion: true,
+              enableLiveAutocompletion: true,
+              enableSnippets: false,
+              showLineNumbers: true,
+              tabSize: 4,
+            }} />
+          <div className={"flex justify-end"}>
+            <button onClick={runUserCode} className={"m-4 px-12 py-2 rounded-md bg-white transition shadow-md hover:shadow-sm active:shadow-none"}>Run</button>
+          </div>
+        </div>
+      </div>
 
-      <button onClick={runUserCode}>Run</button>
 
     </div>
 
