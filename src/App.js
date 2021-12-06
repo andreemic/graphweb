@@ -38,13 +38,16 @@ function App() {
   }
 
   const onClickGraph = (e) => {
-    console.log(e)
-    console.log(document.getElementById("graph-id-graph-wrapper"))
     let graphEl = document.getElementById("graph-id-graph-wrapper")
 
     let elementY = e.clientY - graphEl.clientTop;
     let elementX = e.clientX - graphEl.clientLeft;
 
+    console.log(graphRef.current);
+    graphRef.current._onDragMove = onClickNode
+    graphRef.current._onDragStart = onClickNode
+    graphRef.current._onDragEnd = onClickNode
+    graphRef.current._tick();
     // Todo: create node at (elementX, elementY)
   }
   const runUserCode = () => {
@@ -58,8 +61,8 @@ function App() {
   return (
     <div className={"w-screen h-screen flex flex-col justify-center"}>
       <div>Available functions: {Object.getOwnPropertyNames(Object.getPrototypeOf(G)).join(', ')}</div>
-      <div className={"flex items-center lg:flex-row flex-col"}>
-        <div className={" m-4 bg-white graph-con flex shadow-lg min-content"}>
+      <div className={"flex items-center justify-center lg:flex-row flex-col"}>
+        <div className={" bg-white m-4 graph-con flex shadow-lg min-content"}>
           <Graph
             ref={graphRef}
             id="graph-id" // id is mandatory
