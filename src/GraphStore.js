@@ -53,6 +53,12 @@ class GraphStore {
     this.A = this.A.resize([n + 1, n + 1], 0);
     return this;
   }
+  addNodes(nodes) {
+    for (const node of nodes) {
+      this.addNode();
+    }
+    return this;
+  }
 
   setEdge(node1Idx, node2Idx, val) {
     this.A.subset(m.index(node1Idx, node2Idx), val);
@@ -62,6 +68,13 @@ class GraphStore {
   addEdge(node1Idx, node2Idx) { return this.setEdge(node1Idx, node2Idx, 1); }
   getEdge(node1Idx, node2Idx) {
     return this.A.subset(m.index(node1Idx, node2Idx));
+  }
+  addEdges(edges) {
+    for (const edge of edges) {
+      const [node1, node2] = edge;
+      this.addEdge(node1, node2);
+    }
+    return this;
   }
 
   toD3() {

@@ -1,6 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
-import React, { useState, useMemo, useRef } from "react"
+import React, { useState, useMemo, useRef } from "react";
 import AceEditor from "react-ace";
 
 import "ace-builds/src-noconflict/mode-javascript";
@@ -14,17 +14,29 @@ import d3config from "./d3config.json"
 import { Graph } from "react-d3-graph";
 import { getDefaultGraph } from './GraphStore';
 
+import Alert from "@mui/material/Alert";
+import Button from '@mui/material/Button';
+import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import FloatingButton from '@mui/material/Fab';
+import TextField from '@mui/material/TextField';
+import DeleteIcon from '@material-ui/icons/Delete';
+
 console.log(ace)
 // #autocompletion
 // let langTools = ace.require('ace/ext/language_tools');
 // langTools.addCompleter(customCompleter);
 
 function App() {
-  const [codeVal, setCodeVal] = useState(`function onLoad(editor) {
-    console.log("i've loaded");
-  }`);
+  const [codeVal, setCodeVal] = useState('//Do magic here\n');
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [errorAnnotation, setErrorAnnotation] = useState([]);
+  const [logOutput, setLogOutput] = useState('');
   const onChange = (val, e) => setCodeVal(val)
   const [G, setG] = useState(getDefaultGraph())
+
+  let temporaryLogOutput = '';
+  const log = (message='') => temporaryLogOutput += `${message}\n`;
+  const clearLogs = () => setLogOutput('');
 
   const onClickNode = (nodeId, node, c) => {
     console.log(nodeId, node, c)
@@ -48,16 +60,63 @@ function App() {
     // Todo: create node at (elementX, elementY)
   }
   const runUserCode = () => {
-    eval(codeVal)
+    try {
+      eval(codeVal);
+      setErrorMessage(null);
+    } catch (error) {
+      console.log("error occured");
+      setErrorMessage(error.message);
+      /*setErrorAnnotation([{row: error.lineNumber, column: error.columnNumber, type: 'error', text: error.message}]);
+      -- line and column numbers aren't supported on any browser except firefox
+      */
+    }
     setG(G.copy())
+    setLogOutput(`${logOutput}${temporaryLogOutput}`);
+    temporaryLogOutput = '';
   };
 
   const d3Graph = useMemo(() => G.toD3(), [G]);
 
   const graphRef = useRef(null);
+
+  const bfsExample = `
+function bfs(startNode=0) {
+      var queue = [startNode];
+      const v = G.V;
+      while (queue.length > 0) {
+          var current = queue.shift();
+          v[current].visited = true;
+          log('visiting node ' + current);
+          for (let other = 0; other < v.length; other++) {
+              if (!v[other].visited && G.getEdge(current, other)) {
+                  queue.push(other);
+              }
+          }
+      }
+  }
+
+bfs();`;
+
+  const tree10nodes = `
+    G.addNodes([4, 5, 6, 7, 8, 9]);
+    G.addEdges([[5, 6], [7, 5], [1, 8], [9, 8], [2, 7], [1, 5], [3, 4], [4, 2]]);
+    `;
   return (
     <div className={"w-screen h-screen flex flex-col justify-center"}>
-      <div>Available functions: {Object.getOwnPropertyNames(Object.getPrototypeOf(G)).join(', ')}</div>
+      <div><p>Available functions: {Object.getOwnPropertyNames(Object.getPrototypeOf(G)).join(', ')}</p></div>
+      <div><p>{`Use log(string) for debugging`}</p></div>
+      <div>
+        <Button
+          variant='text'
+          onClick={() => setCodeVal(bfsExample)}>
+          Load BFS example
+        </Button>
+        <Button
+          variant='text'
+          onClick={() => setCodeVal(tree10nodes)}>
+          Load tree with 10 nodes
+        </Button>
+      </div>
       <div className={"flex items-center lg:flex-row flex-col"}>
         <div className={" m-4 bg-white graph-con flex shadow-lg min-content"}>
           <Graph
@@ -71,6 +130,7 @@ function App() {
           />
         </div>
         <div className="code-con">
+          <Alert severity={errorMessage ? 'error' : 'success'}>{errorMessage || 'Compiled successfully'}</Alert>
           <AceEditor
             className={"shadow-lg m-3"}
             placeholder="Placeholder Text"
@@ -89,21 +149,35 @@ function App() {
               enableSnippets: false,
               showLineNumbers: true,
               tabSize: 4,
-            }} />
-          <div className={"flex justify-end"}>
-            <button onClick={runUserCode} className={"m-4 px-12 py-2 rounded-md bg-white transition shadow-md hover:shadow-sm active:shadow-none"}>Run</button>
-          </div>
+            }}
+            annotations={errorAnnotation}
+          />
+          <FloatingButton variant='extended' color='primary' onClick={runUserCode}>
+            Run code
+            <PlayArrowIcon/>
+          </FloatingButton>
+        </div>
+        <div>
+          <TextField
+            variant='filled'
+            disabled
+            value={logOutput}
+            onChange={() => {}}
+            multiline
+            fullWidth
+            />
+          <Button
+            variant='contained'
+            onClick={clearLogs}
+            color='primary'
+          >
+            Clear logs
+            <DeleteIcon />
+          </Button>
         </div>
       </div>
-
-
     </div>
-
   );
 }
 
-function printTest() {
-  console.log("Test");
-}
-
-export default App
+export default App;
