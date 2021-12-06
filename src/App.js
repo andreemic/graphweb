@@ -35,7 +35,7 @@ function App() {
   const [G, setG] = useState(getDefaultGraph())
 
   let temporaryLogOutput = '';
-  const log = (message='') => temporaryLogOutput += `${message}\n`;
+  const log = (message = '') => temporaryLogOutput += `${message}\n`;
   const clearLogs = () => setLogOutput('');
 
 
@@ -55,21 +55,21 @@ function App() {
 
     setG(G.copy())
   };
-  
+
   useEffect(() => {
     document.addEventListener("keydown", handleKeyPress, false)
-    
+
     return () => {
       document.removeEventListener("keydown", handleKeyPress, false)
     }
   }, [])
-  
+
 
   const onClickNode = (nodeId, node, event) => {
     nodeId = parseInt(nodeId)
     if (event.shiftKey) {
-        G.select(nodeId)
-        console.log(node)
+      G.select(nodeId)
+      console.log(node)
     } else {
       G.unselect()
       G.select(nodeId)
@@ -98,7 +98,7 @@ function App() {
     G.unselect()
 
     // Todo: create node at (elementX, elementY)
-    G.addNode({startX: elementX, startY: elementY})
+    G.addNode({ startX: elementX, startY: elementY })
     setG(G.copy())
   }
   const runUserCode = () => {
@@ -143,6 +143,7 @@ bfs();`;
     G.addNodes([4, 5, 6, 7, 8, 9]);
     G.addEdges([[5, 6], [7, 5], [1, 8], [9, 8], [2, 7], [1, 5], [3, 4], [4, 2]]);
     `;
+  const gotLogs = logOutput && logOutput.length > 0;
   return (
     <div className={"w-screen h-screen flex flex-col justify-center"}>
       <div><p>Available functions: {Object.getOwnPropertyNames(Object.getPrototypeOf(G)).join(', ')}</p></div>
@@ -159,7 +160,7 @@ bfs();`;
           Load tree with 10 nodes
         </Button>
       </div>
-      <div className={"flex items-center lg:flex-row flex-col"}>
+      <div className={"flex items-center justify-center lg:flex-row flex-col"}>
         <div className={" m-4 bg-white graph-con flex shadow-lg min-content"}>
           <Graph
             ref={graphRef}
@@ -195,29 +196,33 @@ bfs();`;
             }}
             annotations={errorAnnotation}
           />
-          <FloatingButton variant='extended' color='primary' onClick={runUserCode}>
-            Run code
-            <PlayArrowIcon/>
-          </FloatingButton>
-        </div>
-        <div>
-          <TextField
+          {gotLogs && <div className="p-4"><TextField
             variant='filled'
             disabled
             value={logOutput}
-            onChange={() => {}}
+            onChange={() => { }}
             multiline
             fullWidth
-            />
-          <Button
-            variant='contained'
-            onClick={clearLogs}
-            color='primary'
-          >
-            Clear logs
-            <DeleteIcon />
-          </Button>
+          /></div>}
+
+          <div className=" w-full important justify-between">
+            {gotLogs && <Button
+              variant='contained'
+              onClick={clearLogs}
+              color='primary'
+            >
+              Clear logs
+              <DeleteIcon />
+            </Button>}
+            <FloatingButton className={"ml-auto important"} variant='extended' color='primary' onClick={runUserCode}>
+              Run code
+              <PlayArrowIcon />
+            </FloatingButton>
+
+
+          </div>
         </div>
+
       </div>
     </div>
   );

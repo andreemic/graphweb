@@ -5,7 +5,7 @@
     "focusAnimationDuration": 0,
     "focusZoom": 1,
     "freezeAllDragEvents": false,
-    "height": 400,
+    "height": 600,
     "highlightDegree": 1,
     "highlightOpacity": 0.3,
     "linkHighlightBehavior": false,
@@ -15,7 +15,7 @@
     "panAndZoom": false,
     "staticGraph": false,
     "staticGraphWithDragAndDrop": false,
-    "width": 640,
+    "width": 800,
     "d3": {
       "alphaTarget": 0.05,
       "gravity": -400,
