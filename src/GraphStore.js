@@ -4,29 +4,58 @@ import * as m from 'mathjs';
 const COLOR_ACTIVE = "#ff9f1c"
 const COLOR_VISITED = "#ffbf69"
 const COLOR_INIT = "#2ec4b6"
+function shadeColor(color, percent) {
+
+  var R = parseInt(color.substring(1,3),16);
+  var G = parseInt(color.substring(3,5),16);
+  var B = parseInt(color.substring(5,7),16);
+
+  R = parseInt(R * (100 + percent) / 100);
+  G = parseInt(G * (100 + percent) / 100);
+  B = parseInt(B * (100 + percent) / 100);
+
+  R = (R<255)?R:255;  
+  G = (G<255)?G:255;  
+  B = (B<255)?B:255;  
+
+  var RR = ((R.toString(16).length==1)?"0"+R.toString(16):R.toString(16));
+  var GG = ((G.toString(16).length==1)?"0"+G.toString(16):G.toString(16));
+  var BB = ((B.toString(16).length==1)?"0"+B.toString(16):B.toString(16));
+
+  return "#"+RR+GG+BB;
+}
 
 class Node {
-  constructor(visited = false, active = false, value = null, color = null) {
+  constructor({visited = false, active = false, value = null, color = null, startX=null, startY=null}) {
     this.visited = visited;
     this.active = active;
     this.value = value;
     this._color = color;
+    this.selected = false;
+
+    this.startX = startX;
+    this.startY = startY;
   }
 
   get color() {
-    return this._color || (this.active && COLOR_ACTIVE) || (this.visited && COLOR_VISITED)
+    let selectedColor = this._color || (this.active && COLOR_ACTIVE) || (this.visited && COLOR_VISITED)
       || COLOR_INIT;
+
+    return (this.selected ? shadeColor(selectedColor, -30) : selectedColor)
   }
   toObject() {
     return {
       visited: this.visited,
       value: this.value,
-      color: this.color
+      color: this.color,
+      selected: this.selected,
+      x: this.startX,
+      y: this.startY
     };
   }
 }
 
-class Edge extends Node {}
+class Edge extends Node { }
 
 
 class GraphStore {
@@ -45,8 +74,8 @@ class GraphStore {
     return this.A.size()[0];
   }
 
-  addNode(visited = false, active = false, value = null) {
-    let newNode = new Node(visited, active, value);
+  addNode({visited = false, active = false, value = null, startX=null, startY=null} = {}) {
+    let newNode = new Node({visited, active, value, startX, startY});
     this.nodes.push(newNode);
     let n = this.getNodeNumber();
 
@@ -59,9 +88,19 @@ class GraphStore {
     }
     return this;
   }
+  
+  removeNode(node) {
+    // Todo: make nodes an object. this is whacky
+    node = this._retrieveNode(node) 
+
+    let thisNodeIdx = this.nodes.indexOf(node)
+    this.nodes.forEach((_, otherNodeIdx) => this.removeEdge(thisNodeIdx, otherNodeIdx))
+    this.nodes = this.nodes.map(n => n == node ? null : n)
+  }
 
   setEdge(node1Idx, node2Idx, val) {
     this.A.subset(m.index(node1Idx, node2Idx), val);
+    this.A.subset(m.index(node2Idx, node1Idx), val);
     return this;
   }
   removeEdge(node1Idx, node2Idx) { return this.setEdge(node1Idx, node2Idx, 0); }
@@ -78,7 +117,8 @@ class GraphStore {
   }
 
   toD3() {
-    let nodes = this.nodes.map((node, idx) => ({ id: idx, label: `${idx} ${node.value ? `: ${node.value}` : ""}`, ...node.toObject() }));
+    // this maps nodes to objects, then filters out nulls
+    let nodes = this.nodes.map((node, idx) => node && ({ id: idx, label: `${idx} ${node.value ? `: ${node.value}` : ""}`, ...node.toObject() })).filter(n => n);
     let links = this.getEdgesFromA((val, [fromIdx, toIdx]) => ({ source: fromIdx, target: toIdx }))
 
     return { nodes, links };
@@ -110,6 +150,42 @@ class GraphStore {
     return this.getEdgesFromA((val, [fromIdx, toIdx]) => [fromIdx, toIdx])
   }
 
+  _retrieveNode(node) {
+    try {
+      if (node?.constructor?.name === "Node") {
+        return this.nodes.find(node => node === node);
+      } else if (typeof node === "number") {
+        return this.nodes[node]
+      }
+    } catch (e) {
+      throw Error('Called select with node which is not in the graph')
+    }
+  }
+
+  select(node) {
+    this._retrieveNode(node).selected = true;
+  }
+
+  unselect(node) {
+    if (!node) {
+      this.nodes.forEach(n => n && (n.selected = false));
+    } else if (typeof node === "number") {
+      node = this.nodes[node]
+      node.selected = false;
+    } else if (node?.constructor?.name === "Node") {
+      node = this.nodes.find(node => node === node);
+      node.selected = false;
+    }
+  }
+
+  get selectedNodes() {
+    return this.nodes.filter(n => n && n.selected)
+  }
+
+  get selectedNodesIdx() {
+    return this.nodes.map((n, idx) => n?.selected ? idx : -1).filter(n => n != -1)
+  }
+
   visit(instance) {
     let edge;
     let node;
@@ -128,7 +204,7 @@ class GraphStore {
       node.visited = true;
       node.active = true;
     } else if (edge) {
-      
+
     }
   }
 

@@ -5,3 +5,7 @@
 .graph-con {
   height: min-content;
 }
+
+.node {
+  z-index: 100;
+}

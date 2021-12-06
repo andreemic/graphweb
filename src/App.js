@@ -1,6 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import AceEditor from "react-ace";
 
 import "ace-builds/src-noconflict/mode-javascript";
@@ -38,8 +38,44 @@ function App() {
   const log = (message='') => temporaryLogOutput += `${message}\n`;
   const clearLogs = () => setLogOutput('');
 
-  const onClickNode = (nodeId, node, c) => {
-    console.log(nodeId, node, c)
+
+  const handleKeyPress = e => {
+    if (e.target !== document.body) return
+    switch (e.keyCode) {
+      case 8: // backspace
+      case 45: // del
+        for (let node in G.selectedNodes) {
+          if (!node) return
+          node = parseInt(node)
+          G.removeNode(node)
+        }
+        break
+
+    }
+
+    setG(G.copy())
+  };
+  
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyPress, false)
+    
+    return () => {
+      document.removeEventListener("keydown", handleKeyPress, false)
+    }
+  }, [])
+  
+
+  const onClickNode = (nodeId, node, event) => {
+    nodeId = parseInt(nodeId)
+    if (event.shiftKey) {
+        G.select(nodeId)
+        console.log(node)
+    } else {
+      G.unselect()
+      G.select(nodeId)
+    }
+
+    setG(G.copy())
   }
   const onClickLink = (source, target) => {
     source = parseInt(source);
@@ -49,18 +85,21 @@ function App() {
     setG(G.copy())
   }
 
+  const onNodesConnected = (node1Id, node2Id) => {
+    G.addEdge(parseInt(node1Id), parseInt(node2Id))
+    setG(G.copy())
+  }
+
   const onClickGraph = (e) => {
     let graphEl = document.getElementById("graph-id-graph-wrapper")
 
     let elementY = e.clientY - graphEl.clientTop;
     let elementX = e.clientX - graphEl.clientLeft;
+    G.unselect()
 
-    console.log(graphRef.current);
-    graphRef.current._onDragMove = onClickNode
-    graphRef.current._onDragStart = onClickNode
-    graphRef.current._onDragEnd = onClickNode
-    graphRef.current._tick();
     // Todo: create node at (elementX, elementY)
+    G.addNode({startX: elementX, startY: elementY})
+    setG(G.copy())
   }
   const runUserCode = () => {
     try {
@@ -130,6 +169,7 @@ bfs();`;
             onClickNode={onClickNode}
             onClickLink={onClickLink}
             onClickGraph={onClickGraph}
+            onNodesConnected={onNodesConnected}
           />
         </div>
         <div className="code-con">
